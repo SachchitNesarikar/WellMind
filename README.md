@@ -159,14 +159,6 @@ If you discover a security vulnerability, please report it privately to `securit
 
 ---
 
-## Support
-For help, contact:
-
-- **Email:** support@wellmind.com  
-- **Phone:** +1 (555) 123-4567
-
----
-
 ## License
 This project is released under the **MIT License**. See `LICENSE` for details.
 
