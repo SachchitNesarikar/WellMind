@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mental Health Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: false
+    }
+  </script>
+</head>
+<body class="bg-white flex flex-col h-screen text-gray-900">
+
+  <div class="flex-grow overflow-y-auto p-4" id="chat-window"></div>
+
+  <div class="bg-gray-100 p-4 shadow flex">
+    <input
+      id="user-input"
+      type="text"
+      placeholder="How are you feeling today?"
+      autofocus
+      class="flex-grow bg-white border border-gray-300 rounded px-4 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring focus:ring-blue-500"
+    />
+    <button
+      id="send-btn"
+      class="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+    >
+      Send
+    </button>
+  </div>
+
+  <script>
+    const input = document.getElementById("user-input");
+    const button = document.getElementById("send-btn");
+    const chatWindow = document.getElementById("chat-window");
+
+    // Load saved messages on page load
+    window.addEventListener("load", () => {
+      const saved = sessionStorage.getItem("chatMessages");
+      if (saved) {
+        chatWindow.innerHTML = saved;
+        smoothScrollToBottom();
+      }
+    });
+
+    function saveMessages() {
+      sessionStorage.setItem("chatMessages", chatWindow.innerHTML);
+    }
+
+    function formatBotMessage(text) {
+      let escaped = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>")
+        .replace(/\*(.*?)\*/g, "$1");
+
+      return `<pre class="font-mono whitespace-pre-wrap text-sm">${escaped}</pre>`;
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = sender === "user" ? "text-right mb-2" : "text-left mb-2";
+
+      if (sender === "user") msg.innerHTML = `<span class="inline-block px-4 py-2 rounded-lg bg-gray-200 text-gray-900 max-w-[80vw] block font-normal">${formatBotMessage(text)}</span>`;
+      else msg.innerHTML = `<span class="inline-block px-4 py-2 rounded-lg bg-gray-200 text-gray-900 max-w-[80vw] block font-normal">${formatBotMessage(text)}</span>`;
+
+      chatWindow.appendChild(msg);
+      smoothScrollToBottom();
+      saveMessages();
+    }
+
+    function addMCPMessage(text) {
+      const msg = document.createElement("div");
+      msg.className = "text-left mb-2";
+      msg.innerHTML = `<span class="inline-block px-4 py-2 rounded-lg bg-red-600 text-white max-w-[80vw] block">${formatBotMessage(text)}</span>`;
+      chatWindow.appendChild(msg);
+      smoothScrollToBottom();
+      saveMessages();
+    }
+
+    function addLoading() {
+      const loadingMsg = document.createElement("div");
+      loadingMsg.id = "loading-msg";
+      loadingMsg.className = "text-left mb-2";
+      loadingMsg.innerHTML = `<span class="inline-block px-4 py-2 rounded-lg bg-gray-200 text-gray-500">Bot is typing...</span>`;
+      chatWindow.appendChild(loadingMsg);
+      smoothScrollToBottom();
+    }
+
+    function removeLoading() {
+      const loadingMsg = document.getElementById("loading-msg");
+      if (loadingMsg) loadingMsg.remove();
+    }
+
+    function smoothScrollToBottom() {
+      chatWindow.scrollTo({
+        top: chatWindow.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+
+    function filterResponse(text) {
+      const bannedWords = ["suicide", "kill myself", "hate myself", "end it all"];
+      let filtered = text;
+      filtered = filtered.replace(/\*(.*?)\*/g, "$1");
+      filtered = filtered.replace(/\.\.\.$/, "");
+
+      const maxLength = 600;
+      if (filtered.length > maxLength) {
+        const cutoff = filtered.lastIndexOf(" ", maxLength);
+        filtered = filtered.slice(0, cutoff > 0 ? cutoff : maxLength) + "…";
+      }
+     
+      for (let word of bannedWords) {
+        const regex = new RegExp(word, "gi");
+        filtered = filtered.replace(regex, "[content removed]");
+      }
+
+      return filtered;
+    }
+
+
+    function checkForMCP(text) {
+      const flaggedWords = ["suicide", "kill myself", "hate myself", "end it all"];
+      for (let word of flaggedWords) {
+        if (text.toLowerCase().includes(word)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function getMCPMessage() {
+      return `💙 It sounds like you're going through something really difficult. You're not alone.<br>
+If you're in crisis or feeling overwhelmed, please consider reaching out to a mental health professional or a support line in your area.<br>
+Talking to someone can make a big difference.`;
+    }
+
+    button.addEventListener("click", async () => {
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      input.value = "";
+      button.disabled = true;
+      addLoading();
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        removeLoading();
+
+        if (!res.ok) {
+          addMessage("Sorry, something went wrong.", "bot");
+          return;
+        }
+
+        const data = await res.json();
+        const filtered = filterResponse(data.response);
+        addMessage(filtered, "bot");
+
+        if (checkForMCP(data.response)) {
+          addMCPMessage(getMCPMessage());
+        }
+      } catch (err) {
+        removeLoading();
+        addMessage("Sorry, something went wrong.", "bot");
+        console.error(err);
+      } finally {
+        button.disabled = false;
+        input.focus();
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") button.click();
+    });
+  </script>
+</body>
+</html>
+
+<script>
+  // Generate or retrieve a persistent user ID
+  function getOrCreateUserId() {
+    let userId = localStorage.getItem("user_id");
+    if (!userId) {
+      userId = "user_" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("user_id", userId);
+    }
+    return userId;
+  }
+
+  const userId = getOrCreateUserId();
+  const userName = "Friend"; // You can make this dynamic later
+
+  // Inside your button click handler:
+  const res = await fetch("http://127.0.0.1:8000/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message,
+      user_id: userId,
+      name: userName
+    }),
+  });
+</script>
+
+<script>
+  // Fetch and log user context (for debugging)
+  async function fetchUserContext() {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/context/${userId}`);
+      if (!res.ok) throw new Error("Failed to fetch user context");
+      const data = await res.json();
+      console.log("User Context:", data.context);
+    } catch (error) {
+      console.error("Error fetching user context:", error);
+    }
+  }
+
+  fetchUserContext();
+</script>

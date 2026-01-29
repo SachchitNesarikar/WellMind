@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Therapist Dashboard - WellMind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "wellmind-blue": "#E3F2FD",
+              "wellmind-green": "#E8F5E8",
+              "wellmind-purple": "#F3E5F5",
+              "wellmind-teal": "#E0F2F1",
+              "wellmind-pink": "#FCE4EC",
+              "wellmind-orange": "#FFF3E0",
+              "primary-blue": "#1976D2",
+              "primary-green": "#388E3C",
+              "primary-purple": "#7B1FA2",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .calendar-day {
+        transition: all 0.3s ease;
+      }
+      .calendar-day:hover {
+        transform: scale(1.05);
+        background: linear-gradient(135deg, #e3f2fd, #e0f2f1);
+      }
+      .calendar-day.has-appointments {
+        position: relative;
+      }
+      .calendar-day.has-appointments::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 6px;
+        background: #1976d2;
+        border-radius: 50%;
+      }
+      .calendar-day.selected {
+        background: linear-gradient(135deg, #1976d2, #7b1fa2);
+        color: white;
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .slide-in {
+        animation: slideIn 0.4s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      }
+      .stat-card {
+        background: linear-gradient(135deg, var(--tw-gradient-stops));
+        transition: all 0.3s ease;
+      }
+      .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans">
+    <!-- Header/Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <nav class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between relative">
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-purple rounded-lg flex items-center justify-center transform hover:rotate-12 hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <i class="fas fa-brain text-white text-xl"></i>
+            </div>
+            <span
+              class="text-2xl font-bold text-gray-800 transform hover:scale-105 transition-transform duration-300"
+              >WellMind</span
+            >
+          </div>
+          <div class="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+            <a
+              href="index.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Home</a
+            >
+            <a
+              href="test-section/introductory/test.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Tests</a
+            >
+            <a
+              href="#"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Forum</a
+            >
+            <a
+              href="chatbot/frontend/chatbot.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Chatbot</a
+            >
+            <a
+              href="appointment.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Book Appointment</a
+            >
+            <a
+              href="therapist-dashboard.html"
+              class="text-primary-blue font-semibold border-b-2 border-primary-blue"
+              >Dashboard</a
+            >
+          </div>
+          <div class="flex items-center space-x-4">
+            <button
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+            >
+              Login
+            </button>
+            <button
+              class="bg-primary-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+            >
+              Sign Up
+            </button>
+          </div>
+          <button class="md:hidden text-gray-600" id="mobile-menu-btn">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+        </div>
+        <div class="md:hidden hidden mt-4" id="mobile-menu">
+          <div class="flex flex-col space-y-4">
+            <a
+              href="index.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Home</a
+            >
+            <a
+              href="test-section/introductory/test.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Tests</a
+            >
+            <a
+              href="#"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Forum</a
+            >
+            <a
+              href="chatbot/frontend/chatbot.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Chatbot</a
+            >
+            <a
+              href="appointment.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Book Appointment</a
+            >
+            <a
+              href="therapist-dashboard.html"
+              class="text-primary-blue font-semibold"
+              >Dashboard</a
+            >
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section
+      class="bg-gradient-to-br from-wellmind-blue to-wellmind-teal py-12 relative overflow-hidden"
+    >
+      <div class="absolute inset-0">
+        <div
+          class="absolute top-10 left-10 w-72 h-72 bg-primary-blue rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+        ></div>
+        <div
+          class="absolute top-20 right-10 w-96 h-96 bg-primary-purple rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style="animation-delay: 2s"
+        ></div>
+      </div>
+      <div class="container mx-auto px-4 text-center relative z-10">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          Therapist
+          <span
+            class="bg-gradient-to-r from-primary-blue via-primary-purple to-primary-green bg-clip-text text-transparent"
+            >Dashboard</span
+          >
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Manage your appointments and view your daily schedule
+        </p>
+      </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section class="py-8 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Bookings -->
+            <div
+              class="stat-card from-wellmind-blue to-primary-blue text-white rounded-xl p-6 shadow-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm opacity-90 mb-1">Total Bookings</p>
+                  <h3 class="text-3xl font-bold" id="totalBookings">12</h3>
+                  <p class="text-xs opacity-75 mt-1">This Week</p>
+                </div>
+                <div
+                  class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-calendar-alt text-3xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Completed Sessions -->
+            <div
+              class="stat-card from-wellmind-green to-primary-green text-white rounded-xl p-6 shadow-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm opacity-90 mb-1">Completed</p>
+                  <h3 class="text-3xl font-bold" id="completedSessions">8</h3>
+                  <p class="text-xs opacity-75 mt-1">Sessions</p>
+                </div>
+                <div
+                  class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-check-circle text-3xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pending Sessions -->
+            <div
+              class="stat-card from-wellmind-purple to-primary-purple text-white rounded-xl p-6 shadow-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm opacity-90 mb-1">Pending</p>
+                  <h3 class="text-3xl font-bold" id="pendingSessions">4</h3>
+                  <p class="text-xs opacity-75 mt-1">Sessions</p>
+                </div>
+                <div
+                  class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-clock text-3xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-12 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calendar Section -->
+            <div class="lg:col-span-2">
+              <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-calendar text-primary-blue mr-2"></i
+                    >Calendar
+                  </h2>
+                  <div class="flex items-center space-x-4">
+                    <button
+                      id="prevMonth"
+                      class="w-10 h-10 bg-wellmind-blue text-primary-blue rounded-lg hover:bg-primary-blue hover:text-white transition-all"
+                    >
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3
+                      id="currentMonth"
+                      class="text-lg font-semibold text-gray-700 min-w-[150px] text-center"
+                    ></h3>
+                    <button
+                      id="nextMonth"
+                      class="w-10 h-10 bg-wellmind-blue text-primary-blue rounded-lg hover:bg-primary-blue hover:text-white transition-all"
+                    >
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="grid grid-cols-7 gap-2 mb-2">
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Sun
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Mon
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Tue
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Wed
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Thu
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Fri
+                  </div>
+                  <div
+                    class="text-center text-sm font-semibold text-gray-600 py-2"
+                  >
+                    Sat
+                  </div>
+                </div>
+
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+              </div>
+            </div>
+
+            <!-- Appointments List -->
+            <div class="lg:col-span-1">
+              <div class="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                  <i class="fas fa-list text-primary-purple mr-2"></i
+                  >Appointments
+                </h2>
+                <p id="selectedDateDisplay" class="text-sm text-gray-600 mb-4">
+                  Select a date to view appointments
+                </p>
+                <div id="appointmentsList" class="space-y-4"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-16 mt-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="md:col-span-2">
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-purple rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-brain text-white text-xl"></i>
+              </div>
+              <span class="text-2xl font-bold">WellMind</span>
+            </div>
+            <p class="text-gray-300 mb-6 max-w-md">
+              Your trusted companion for mental health and wellbeing. Supporting
+              individuals of all ages on their journey to better mental health.
+            </p>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="index.html"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Home</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Features</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >About</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Privacy Policy</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Terms of Service</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Contact Us</h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-envelope text-primary-blue"></i>
+                <span class="text-gray-300">support@wellmind.com</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-phone text-primary-blue"></i>
+                <span class="text-gray-300">+91 9876543210</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-map-marker-alt text-primary-blue"></i>
+                <span class="text-gray-300">Mumbai, Maharashtra</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 mt-12 pt-8 text-center">
+          <p class="text-gray-400">
+            © 2024 WellMind. All rights reserved. | Made with ❤️ for better
+            mental health.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="therapist-dashboard.js"></script>
+  </body>
+</html>

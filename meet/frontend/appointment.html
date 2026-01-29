@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment - WellMind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "wellmind-blue": "#E3F2FD",
+              "wellmind-green": "#E8F5E8",
+              "wellmind-purple": "#F3E5F5",
+              "wellmind-teal": "#E0F2F1",
+              "wellmind-pink": "#FCE4EC",
+              "wellmind-orange": "#FFF3E0",
+              "primary-blue": "#1976D2",
+              "primary-green": "#388E3C",
+              "primary-purple": "#7B1FA2",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+      }
+      .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .badge {
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+      .time-slot {
+        transition: all 0.2s ease;
+      }
+      .time-slot:hover {
+        transform: scale(1.05);
+      }
+      .time-slot.selected {
+        background: linear-gradient(135deg, #1976d2, #7b1fa2);
+        color: white;
+        transform: scale(1.05);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans">
+    <!-- Header/Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <nav class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between relative">
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-purple rounded-lg flex items-center justify-center transform hover:rotate-12 hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <i class="fas fa-brain text-white text-xl"></i>
+            </div>
+            <span
+              class="text-2xl font-bold text-gray-800 transform hover:scale-105 transition-transform duration-300"
+              >WellMind</span
+            >
+          </div>
+          <div class="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+            <a
+              href="test.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Tests</a
+            >
+            <a
+              href="#"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Forum</a
+            >
+            <a
+              href="chatbot.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Chatbot</a
+            >
+            <a
+              href="appointment.html"
+              class="text-primary-blue font-semibold border-b-2 border-primary-blue"
+              >Book Appointment</a
+            >
+          </div>
+          <button class="md:hidden text-gray-600" id="mobile-menu-btn">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+        </div>
+        <div class="md:hidden hidden mt-4" id="mobile-menu">
+          <div class="flex flex-col space-y-4">
+            <a
+              href="test.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Tests</a
+            >
+            <a
+              href="#"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Forum</a
+            >
+            <a
+              href="chatbot.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+              >Chatbot</a
+            >
+            <a
+              href="appointment.html"
+              class="text-primary-blue font-semibold"
+              >Book Appointment</a
+            >
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breadcrumb & Back Button -->
+    <div class="bg-white border-b">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <nav class="flex items-center space-x-2 text-sm">
+            <a
+              href="index.html"
+              class="text-gray-600 hover:text-primary-blue transition-colors"
+            >
+              <i class="fas fa-home mr-1"></i>Home
+            </a>
+            <span class="text-gray-400">/</span>
+            <span class="text-primary-blue font-semibold"
+              >Book Appointment</span
+            >
+          </nav>
+          <a
+            href="index.html"
+            class="text-gray-600 hover:text-primary-blue transition-colors flex items-center space-x-2"
+          >
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Home</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section
+      class="bg-gradient-to-br from-wellmind-blue to-wellmind-teal py-12 relative overflow-hidden"
+    >
+      <div class="absolute inset-0">
+        <div
+          class="absolute top-10 left-10 w-72 h-72 bg-primary-blue rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+        ></div>
+        <div
+          class="absolute top-20 right-10 w-96 h-96 bg-primary-purple rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style="animation-delay: 2s"
+        ></div>
+      </div>
+      <div class="container mx-auto px-4 text-center relative z-10">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+          Book Your
+          <span
+            class="bg-gradient-to-r from-primary-blue via-primary-purple to-primary-green bg-clip-text text-transparent"
+            >Appointment</span
+          >
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Connect with licensed psychologists and mental health professionals
+          who care about your wellbeing
+        </p>
+      </div>
+    </section>
+
+    <!-- Search & Filter Section -->
+    <section class="py-8 bg-white shadow-sm">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+              <div class="relative">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Search by name or specialization..."
+                  class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all"
+                />
+                <i
+                  class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                ></i>
+              </div>
+            </div>
+            <div>
+              <select
+                id="typeFilter"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all"
+              >
+                <option value="">All Types</option>
+                <option value="Clinical">Clinical Psychologist</option>
+                <option value="Child">Child Psychologist</option>
+                <option value="Behavioral">Behavioral Therapist</option>
+                <option value="Counseling">Counseling Psychologist</option>
+                <option value="Neuropsychologist">Neuropsychologist</option>
+              </select>
+            </div>
+            <div>
+              <select
+                id="experienceFilter"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all"
+              >
+                <option value="">All Experience</option>
+                <option value="0-2">0-2 years</option>
+                <option value="3-5">3-5 years</option>
+                <option value="5+">5+ years</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4 text-center">
+            <button
+              id="searchBtn"
+              class="bg-primary-blue text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <i class="fas fa-search mr-2"></i>Search Psychologists
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Doctor Cards Section -->
+    <section class="py-12 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">
+              Available Psychologists
+            </h2>
+            <div class="text-sm text-gray-600">
+              <span id="resultCount">6</span> professionals found
+            </div>
+          </div>
+          <div
+            id="doctorGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+          <div
+            id="noResults"
+            class="hidden text-center py-12"
+          >
+            <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-600 mb-2">
+              No psychologists found
+            </h3>
+            <p class="text-gray-500">
+              Try adjusting your search filters or search terms
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+      <div
+        class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-2xl font-bold text-gray-800">Book Appointment</h3>
+          <button
+            id="closeModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="mb-6 p-4 bg-gradient-to-r from-wellmind-blue to-wellmind-teal rounded-lg">
+          <div class="flex items-center space-x-4">
+            <img
+              id="modalDoctorImage"
+              src=""
+              alt="Doctor"
+              class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+            />
+            <div>
+              <h4 id="modalDoctorName" class="text-lg font-bold text-gray-800">
+              </h4>
+              <p id="modalDoctorSpec" class="text-sm text-gray-600"></p>
+            </div>
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-calendar-alt mr-2 text-primary-blue"></i>Select
+            Date
+          </label>
+          <input
+            type="date"
+            id="appointmentDate"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all"
+            min=""
+          />
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-clock mr-2 text-primary-blue"></i>Select Time Slot
+          </label>
+          <div class="grid grid-cols-3 gap-2" id="timeSlots">
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="09:00 AM"
+            >
+              09:00 AM
+            </button>
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="10:00 AM"
+            >
+              10:00 AM
+            </button>
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="11:00 AM"
+            >
+              11:00 AM
+            </button>
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="02:00 PM"
+            >
+              02:00 PM
+            </button>
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="03:00 PM"
+            >
+              03:00 PM
+            </button>
+            <button
+              class="time-slot px-4 py-2 border border-gray-300 rounded-lg hover:border-primary-blue hover:bg-wellmind-blue transition-all text-sm font-medium"
+              data-time="04:00 PM"
+            >
+              04:00 PM
+            </button>
+          </div>
+        </div>
+        <button
+          id="confirmAppointment"
+          class="w-full bg-gradient-to-r from-primary-blue to-primary-purple text-white px-6 py-4 rounded-lg font-semibold hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+        >
+          <i class="fas fa-check-circle mr-2"></i>Confirm Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    <div
+      id="successMessage"
+      class="hidden fixed top-24 right-4 bg-white rounded-lg shadow-2xl p-6 max-w-sm z-50 border-l-4 border-primary-green"
+    >
+      <div class="flex items-start space-x-4">
+        <div
+          class="w-12 h-12 bg-primary-green rounded-full flex items-center justify-center flex-shrink-0"
+        >
+          <i class="fas fa-check text-white text-xl"></i>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold text-gray-800 mb-1">
+            Appointment Booked!
+          </h4>
+          <p class="text-sm text-gray-600" id="successDetails"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-16 mt-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="md:col-span-2">
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-purple rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-brain text-white text-xl"></i>
+              </div>
+              <span class="text-2xl font-bold">WellMind</span>
+            </div>
+            <p class="text-gray-300 mb-6 max-w-md">
+              Your trusted companion for mental health and wellbeing. Supporting
+              individuals of all ages on their journey to better mental health.
+            </p>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-110 hover:rotate-12"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="index.html"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Home</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Features</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >About</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Privacy Policy</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-300 hover:text-white transition-colors"
+                  >Terms of Service</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Contact Us</h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-envelope text-primary-blue"></i>
+                <span class="text-gray-300">support@wellmind.com</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-phone text-primary-blue"></i>
+                <span class="text-gray-300">+1 (555) 123-4567</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-map-marker-alt text-primary-blue"></i>
+                <span class="text-gray-300">123 Health St, Wellness City</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 mt-12 pt-8 text-center">
+          <p class="text-gray-400">
+            © 2024 WellMind. All rights reserved. | Made with ❤️ for better
+            mental health.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="appointment.js"></script>
+  </body>
+</html>
